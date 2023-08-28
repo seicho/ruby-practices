@@ -41,6 +41,11 @@ def print_calender(date,e)
   puts ""
   #最後に％が表示されてしまうのを防ぐために追加
 end
+#1-12以外の月が入力された際の処理
+if parameters["m"].to_i < 1 || parameters["m"].to_i > 12
+  print "cal: #{parameters["m"]}は月を示す数字ではありません"
+  exit
+end
 
 #コマンドラインオプションに応じてprint_calenderに渡す引数を定義
 if parameters["y"] && parameters["m"]
