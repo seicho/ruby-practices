@@ -5,7 +5,7 @@ parameters = ARGV.getopts("y:", "m:")
 
 def print_calender(date,e)
   counter = 0
-  empty = e 
+  first_line_indent = e 
   today_day = 0
  
   print "#{date.month}月 #{date.year}".center(21) + "\n"
@@ -16,7 +16,7 @@ def print_calender(date,e)
   print "\n"
 
   #1週目のインデントを作成
-  empty.times do |x|
+  first_line_indent.times do |x|
     print "".rjust(3)
     counter += 1
   end
@@ -41,17 +41,22 @@ def print_calender(date,e)
   puts ""
   #最後に％が表示されてしまうのを防ぐために追加
 end
+
 #1-12以外の月が入力された際の処理
-if parameters["m"].to_i < 1 || parameters["m"].to_i > 12
-  print "cal: #{parameters["m"]}は月を示す数字ではありません"
-  exit
+def isMonthValueInvalid?(parameters)
+  if parameters["m"].to_i < 1 || parameters["m"].to_i > 12
+    print "cal: #{parameters["m"]}は月を示す数字ではありません"
+    exit
+  end
 end
 
 #コマンドラインオプションに応じてprint_calenderに渡す引数を定義
 if parameters["y"] && parameters["m"]
+  isMonthValueInvalid?(parameters)
   date =  Date.new(parameters["y"].to_i,parameters["m"].to_i,-1)
   indent_for_first_week = Date.new(parameters["y"].to_i,parameters["m"].to_i,1).wday
 elsif parameters["m"]
+  isMonthValueInvalid?(parameters)
   date = Date.new(Date.today.year,parameters["m"].to_i,-1)
   indent_for_first_week = Date.new(Date.today.year,parameters["m"].to_i,1).wday
 else
