@@ -7,7 +7,6 @@ score_sheet_array = []
 score_sheet.each do |c|
   if c == "x"
     score_sheet_array << 10
-  #異常なスコアが含まれていた場合の処理
   elsif c.to_i > 10
     raise "This sheet includes invalid score "
   else
@@ -55,12 +54,10 @@ score_sheet_array.each.with_index do |score, index|
       isGameEnd = true
     end
   when 11 
-    #TODO frame_counterが10以上の処理を追加
     raise "This is an invalid score sheet. Frame is over 10."
   end
 end
 
-#10フレームの投球数が足りない場合の処理
 if isGameEnd == false
   raise "You need to throw a ball again"
 end
