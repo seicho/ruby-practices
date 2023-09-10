@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 score_sheet = ARGV[0]
 score_sheet = score_sheet.split(',')
 score_sheet_array = []
@@ -12,9 +14,7 @@ score_sheet.each do |c|
   end
 end
 
-if score_sheet.size < 12
-  raise 'This sheet is invalid. You need to throw more'
-end
+raise 'This sheet is invalid. You need to throw more' if score_sheet.size < 12
 
 total_score = 0
 frame = []
@@ -55,8 +55,6 @@ score_sheet_array.each.with_index do |score, index|
   end
 end
 
-if game_finished == false
-  raise 'You need to throw a ball again'
-end
+raise 'You need to throw a ball again' if game_finished == false
 
 print total_score
