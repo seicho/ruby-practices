@@ -43,20 +43,6 @@ def validate_month(month)
   end
 end
 
-#コマンドラインオプションに応じてprint_calenderに渡す引数を定義
-#if parameters["y"] && parameters["m"]
-#  validate_month(parameters)
-#  date =  Date.new(parameters["y"].to_i,parameters["m"].to_i,-1)
-#  indent_for_first_week = Date.new(parameters["y"].to_i,parameters["m"].to_i,1).wday
-#elsif parameters["m"]
-#  validate_month(parameters)
-#  date = Date.new(Date.today.year,parameters["m"].to_i,-1)
-#  indent_for_first_week = Date.new(Date.today.year,parameters["m"].to_i,1).wday
-#else
-#  date = Date.new(Date.today.year,Date.today.month,-1)
-#  indent_for_first_week = Date.new(Date.today.year,Date.today.month,1).wday
-#end
-
 input_year = parameters['y']
 input_month = parameters['m']
 validate_month(input_month) if input_month
