@@ -37,7 +37,8 @@ end
 
 def validate_month(month)
   if month.to_i < 1 || month.to_i > 12
-    print "cal: #{month}は月を示す数字ではありません"
+    print "cal: #{month} is neither a month number (1..12) nor a name"
+    puts
     exit
   end
 end
