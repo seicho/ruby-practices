@@ -21,10 +21,6 @@ score_sheet_array.each_slice(2) do |shots|
   frames << shots
 end
 
-if frames.size < 10 || ((frames[9][0] == 10 || frames[9].sum == 10) && frames.size < 11) || (frames[10][0] == 10 && frames.size < 12) || frames.size > 12
-  raise 'This sheet is invalid'
-end
-
 total_score = 0
 frame_counter = 0
 frames.each.with_index do |frame, index|
