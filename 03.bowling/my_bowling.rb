@@ -5,40 +5,56 @@ score_sheet = score_sheet.split(',')
 score_sheet_array = []
 
 score_sheet.each do |c|
-  if c.match?(/x/i)
+  if c == 'x'
     score_sheet_array << 10
-    score_sheet_array << 0
   elsif c.to_i > 10
     raise 'This sheet includes invalid score'
   else
     score_sheet_array << c.to_i
   end
 end
+
 raise 'This sheet is invalid. You need to throw more' if score_sheet.size < 12
 
-frames = []
-score_sheet_array.each_slice(2) do |shots|
-  frames << shots
-end
-
-if frames.size < 10 || ((frames[9][0] == 10 || frames[9].sum == 10) && frames.size < 11) || (frames[10][0] == 10 && frames.size < 12) || frames.size > 12
-  raise 'This sheet is invalid'
-end
-
 total_score = 0
-frame_counter = 0
-frames.each.with_index do |frame, index|
-  total_score += if frame[0] == 10 && frames[index + 1][0] == 10
-                   frame[0] + frames[index + 1][0] + frames[index + 2][0]
-                 elsif frame[0] == 10
-                   frame[0] + frames[index + 1].sum
-                 elsif frame.sum == 10
-                   frame.sum + frames[index + 1][0]
-                 else
-                   frame.sum
-                 end
-  frame_counter += 1
-  break if frame_counter == 10
+frame = []
+frame_counter = 1
+game_finished = false
+
+score_sheet_array.each.with_index do |score, index|
+  case frame_counter
+  when 1..9
+    if score == 10 && frame == []
+      total_score += score + score_sheet_array[index + 1] + score_sheet_array[index + 2]
+      frame_counter += 1
+    else
+      frame << score
+      if frame.size == 2 && frame.sum == 10
+        total_score += frame.sum + score_sheet_array[index + 1]
+        frame = []
+        frame_counter += 1
+      elsif frame.size == 2
+        total_score += frame.sum
+        frame = []
+        frame_counter += 1
+      end
+    end
+  when 10
+    frame << score
+    if frame.size == 2 && frame.sum < 10
+      total_score += frame.sum
+      frame_counter += 1
+      game_finished = true
+    elsif frame.size == 3
+      total_score += frame.sum
+      frame_counter += 1
+      game_finished = true
+    end
+  when 11
+    raise 'This is an invalid score sheet. Frame is over 10.'
+  end
 end
 
-p total_score
+raise 'You need to throw a ball again' if game_finished == false
+
+print total_score
