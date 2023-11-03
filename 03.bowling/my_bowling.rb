@@ -24,7 +24,7 @@ game_finished = false
 score_sheet_array.each.with_index do |score, index|
   case frame_counter
   when 1..9
-    if score == 10 && frame == []
+    if score == 10
       total_score += score + score_sheet_array[index + 1] + score_sheet_array[index + 2]
       frame_counter += 1
     else
