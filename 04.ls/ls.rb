@@ -15,13 +15,9 @@ def format_filenames(path, row)
   formatted_filenames = Array.new(number_of_cols) { [] }
   allocated_filenames = 0
   (0..number_of_filenames - 1).each do |i|
-    if i == number_of_filenames - 1 && number_of_filenames == 4
-      formatted_filenames[0] << filenames[i]
-    else
-      allocated_filenames = 0 if allocated_filenames == number_of_cols
-      formatted_filenames[allocated_filenames] << filenames[i]
-      allocated_filenames += 1
-    end
+    allocated_filenames = 0 if allocated_filenames == number_of_cols
+    formatted_filenames[allocated_filenames] << filenames[i]
+    allocated_filenames += 1
   end
   formatted_filenames
 end
@@ -38,10 +34,8 @@ end
 
 def print_result(formatted_filenames, margin_each_rows)
   formatted_filenames.each do |col|
-    i = 0
-    col.each do |word|
+    col.each.with_index do |word, i|
       print word.ljust(margin_each_rows[i] + 2)
-      i += 1
     end
     puts
   end
