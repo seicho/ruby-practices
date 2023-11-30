@@ -1,14 +1,15 @@
 # frozen_string_literal: true
+
 require 'optparse'
 
 def main
   opt = OptionParser.new
   params = {}
-  opt.on('-a') {|v| params[:a] = v}
+  opt.on('-a') { |v| params[:a] = v }
   opt.parse!(ARGV)
   path = ARGV[0] || '.'
   row = 3
-  filenames =  generate_filenames(path, params).sort
+  filenames = generate_filenames(path, params).sort
   formatted_filenames = format_filenames(filenames, row)
   margin_each_rows = calculate_margin(formatted_filenames, row)
   print_result(formatted_filenames, margin_each_rows)
@@ -18,7 +19,7 @@ def generate_filenames(path, params)
   if params[:a]
     Dir.entries(path)
   else
-    Dir.entries(path).delete_if {|f| f.start_with?('.') } 
+    Dir.entries(path).delete_if { |f| f.start_with?('.') }
   end
 end
 
@@ -54,6 +55,4 @@ def print_result(formatted_filenames, margin_each_rows)
   end
 end
 
-if __FILE__ == $0
-  main
-end
+__FILE__ == $PROGRAM_NAME && main
