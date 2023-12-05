@@ -1,18 +1,26 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require 'optparse'
 
 def main
+  params = parse_option
+  path = ARGV[0] || '.'
+  row = 3
+  filenames = generate_filenames(path, params)
+  sorted_filenames = sort_filenames(filenames, params)
+  formatted_filenames = format_filenames(sorted_filenames, row)
+  margin_each_rows = calculate_margin(formatted_filenames, row)
+  print_result(formatted_filenames, margin_each_rows)
+end
+
+def parse_option
   opt = OptionParser.new
   params = {}
   opt.on('-a') { |v| params[:a] = v }
+  opt.on('-r') { |v| params[:r] = v }
   opt.parse!(ARGV)
-  path = ARGV[0] || '.'
-  row = 3
-  filenames = generate_filenames(path, params).sort
-  formatted_filenames = format_filenames(filenames, row)
-  margin_each_rows = calculate_margin(formatted_filenames, row)
-  print_result(formatted_filenames, margin_each_rows)
+  params
 end
 
 def generate_filenames(path, params)
@@ -20,6 +28,14 @@ def generate_filenames(path, params)
     Dir.entries(path)
   else
     Dir.entries(path).delete_if { |f| f.start_with?('.') }
+  end
+end
+
+def sort_filenames(filenames, params)
+  if params[:r]
+    filenames.sort.reverse
+  else
+    filenames.sort
   end
 end
 
