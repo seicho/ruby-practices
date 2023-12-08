@@ -118,9 +118,9 @@ def format_filenames(filenames)
   formatted_filenames
 end
 
-def print_items(formatted_filenames, total_file_size, params)
+def print_items(formatted_filenames, total_blocks, params)
   width_each_columns = calculate_column_width(formatted_filenames, params)
-  puts "total #{total_file_size}" if params[:l]
+  puts "total #{total_blocks}" if params[:l]
   formatted_filenames.each do |row|
     row.each.with_index do |item, i|
       print item.instance_of?(Integer) ? "#{item.to_s.rjust(width_each_columns[i])} " : item.ljust(width_each_columns[i] + 1)
