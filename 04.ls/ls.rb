@@ -29,9 +29,8 @@ def main
   params = parse_option
   path = ARGV[0] || '.'
   filenames = get_filenames(path, params)
-  formatted_items = params[:l] ? format_file_info(filenames, path) : format_filenames(filenames, path)
-  width_each_columns = calculate_column_width(formatted_items, params)
-  print_items(formatted_items, width_each_columns)
+  formatted_items, total_blocks = format_items(filenames, path, params)
+  print_items(formatted_items, total_blocks, params)
 end
 
 def parse_option
@@ -63,10 +62,22 @@ def sort_filenames(filenames, params)
   end
 end
 
+def format_items(filenames, path, params)
+  if params[:l]
+    formatted_items, total_blocks = format_file_info(filenames, path)
+  else
+    formatted_items = format_filenames(filenames)
+    total_blocks = nil
+  end
+  [formatted_items, total_blocks]
+end
+
 def format_file_info(filenames, path)
   formatted_file_info = []
+  total_blocks = 0
+  Dir.chdir(path)
   filenames.each do |filename|
-    f = File::Stat.new(File.realpath(filename, path))
+    f = File.lstat(filename)
     formatted_file_info << [
       format_file_mode(format('%06o', f.mode)),
       f.nlink,
@@ -76,8 +87,9 @@ def format_file_info(filenames, path)
       f.mtime.strftime('%b %e %H:%M'),
       filename
     ]
+    total_blocks += f.blocks / 2
   end
-  formatted_file_info
+  [formatted_file_info, total_blocks]
 end
 
 def format_file_mode(file_mode_int)
@@ -87,15 +99,15 @@ def format_file_mode(file_mode_int)
   (3..5).each do |i|
     permissions << PERMISSION_TYPES[m[i].to_sym]
   end
-  permissions[0] = permission[0].gsub(/(..)x/, '\1s').gsub(/(..)-/, '\1S') if m[:sticky_bit].match?(/[4-7]/)
-  permissions[1] = permission[1].gsub(/(..)x/, '\1s').gsub(/(..)-/, '\1S') if m[:sticky_bit].match?(/[2,3,6,7]/)
-  permissions[2] = permission[2].gsub(/(..)x/, '\1t').gsub(/(..)-/, '\1T') if m[:sticky_bit].match?(/[1,3,5,7]/)
+  permissions[0] = permissions[0].gsub(/(..)x/, '\1s').gsub(/(..)-/, '\1S') if m[:sticky_bit].match?(/[4-7]/)
+  permissions[1] = permissions[1].gsub(/(..)x/, '\1s').gsub(/(..)-/, '\1S') if m[:sticky_bit].match?(/[2,3,6,7]/)
+  permissions[2] = permissions[2].gsub(/(..)x/, '\1t').gsub(/(..)-/, '\1T') if m[:sticky_bit].match?(/[1,3,5,7]/)
   file_type + permissions.join
 end
 
-def format_filenames(filenames, row)
+def format_filenames(filenames)
   number_of_filenames = filenames.size
-  number_of_cols = (number_of_filenames % row).zero? ? number_of_filenames / row : number_of_filenames / row + 1
+  number_of_cols = (number_of_filenames % NUMBER_OF_COLUMNS).zero? ? number_of_filenames / NUMBER_OF_COLUMNS : number_of_filenames / NUMBER_OF_COLUMNS + 1
   formatted_filenames = Array.new(number_of_cols) { [] }
   allocated_filenames = 0
   (0..number_of_filenames - 1).each do |i|
@@ -104,6 +116,17 @@ def format_filenames(filenames, row)
     allocated_filenames += 1
   end
   formatted_filenames
+end
+
+def print_items(formatted_filenames, total_file_size, params)
+  width_each_columns = calculate_column_width(formatted_filenames, params)
+  puts "total #{total_file_size}" if params[:l]
+  formatted_filenames.each do |row|
+    row.each.with_index do |item, i|
+      print item.instance_of?(Integer) ? "#{item.to_s.rjust(width_each_columns[i])} " : item.ljust(width_each_columns[i] + 1)
+    end
+    puts
+  end
 end
 
 def calculate_column_width(formatted_filenames, params)
@@ -120,15 +143,6 @@ def calculate_column_width(formatted_filenames, params)
     end
   end
   width_each_columns
-end
-
-def print_items(formatted_filenames, width_each_columns)
-  formatted_filenames.each do |row|
-    row.each.with_index do |item, i|
-      print item.instance_of?(Integer) ? "#{item.to_s.rjust(width_each_columns[i])} " : item.ljust(width_each_columns[i] + 1)
-    end
-    puts
-  end
 end
 
 __FILE__ == $PROGRAM_NAME && main
