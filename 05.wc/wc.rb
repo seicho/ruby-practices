@@ -12,7 +12,6 @@ def main
   opt.parse! ARGV
   filter_params = { lines: true, words: true, bytes: true } if filter_params.empty?
 
-  # contents_with_source_name = ARGV.empty? ? {stdin: readlines.join} : ARGV.map{ |file_name| [file_name, IO.readlines(file_name, nil).pop] }.to_h
   if ARGV.empty?
     contents = [readlines.join]
     source_names = [:stdin]
@@ -27,18 +26,18 @@ def main
   puts formatted_stats
 end
 
+def calcurate_stats(contents_with_source_name)
+  stats = contents_with_source_name.map{ |source_name, contents| [source_name, build_data(contents)] }.to_h
+  return stats if stats.length == 1
+
+  add_total(stats)
+end
+
 def build_data(contents)
   lines = contents.scan(/(\n|\r)/).count
   words = contents.split(/[\s^　]+/).count
   bytes = contents.bytesize
   { lines:, words:, bytes: }
-end
-
-def calcurate_stats(contents)
-  stats = contents.map{ |source_name, contents| [source_name, build_data(contents)] }.to_h
-  return stats if stats.length == 1
-
-  add_total(stats)
 end
 
 def add_total(file_stats)
