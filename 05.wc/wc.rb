@@ -7,39 +7,41 @@ def main
   opt = OptionParser.new
   filter_params = {}
   opt.on('-l') { |v| filter_params[:lines] = v }
-  opt.on('-w') { |v| filter_params[:chars] = v }
+  opt.on('-w') { |v| filter_params[:words] = v }
   opt.on('-c') { |v| filter_params[:bytes] = v }
   opt.parse! ARGV
-  filter_params = { lines: true, chars: true, bytes: true } if filter_params.empty?
-  formatted_stats = if ARGV.size == 1
-                      format_file_stats(file_stats:, filter_params:)
-                    elsif ARGV.size >= 2
-                      file_stats_with_total = calcurate_total file_stats
-                      format_file_stats(file_stats: file_stats_with_total, filter_params:)
-                    else
-                      input = readlines.join
-                      stat = build_data(input)
-                      format(stat:, filter_params:)
-                    end
-  puts formatted_stats
-end
+  filter_params = { lines: true, words: true, bytes: true } if filter_params.empty?
 
-def file_stats
-  ARGV.map do |file_name|
-    contents = IO.readlines(file_name).join
-    stats = build_data(contents)
-    [file_name, { lines: stats[:lines], chars: stats[:chars], bytes: stats[:bytes] }]
-  end.to_h
+  # contents_with_source_name = ARGV.empty? ? {stdin: readlines.join} : ARGV.map{ |file_name| [file_name, IO.readlines(file_name, nil).pop] }.to_h
+  if ARGV.empty?
+    contents = [readlines.join]
+    source_names = [:stdin]
+  else
+    contents = ARGV.map{ |file_name| IO.readlines(file_name, nil).pop }
+    source_names = ARGV
+  end
+  contents_with_source_name = source_names.zip(contents).to_h
+  stats = calcurate_stats(contents_with_source_name)
+  col_width = stats.has_key?(:stdin) ? 7 : max_col_width(stats)
+  formatted_stats = format_stats(stats:, filter_params:, col_width:)
+  puts formatted_stats
 end
 
 def build_data(contents)
   lines = contents.scan(/(\n|\r)/).count
-  chars = contents.split(/\s+/).count
-  bytes = contents.size
-  { lines:, chars:, bytes: }
+  words = contents.split(/[\s^　]+/).count
+  bytes = contents.bytesize
+  { lines:, words:, bytes: }
 end
 
-def calcurate_total(file_stats)
+def calcurate_stats(contents)
+  stats = contents.map{ |source_name, contents| [source_name, build_data(contents)] }.to_h
+  return stats if stats.length == 1
+
+  add_total(stats)
+end
+
+def add_total(file_stats)
   stats = file_stats.values
   total = {
     total: stats[0].merge(*stats[1..]) { |_, old_value, new_value| old_value + new_value }
@@ -47,20 +49,18 @@ def calcurate_total(file_stats)
   file_stats.merge(total)
 end
 
-def format_file_stats(file_stats:, filter_params:)
-  col_width = max_col_width(file_stats)
-  file_stats.map { |name, stat| format(stat:, filter_params:, col_width:) + " #{name}" }.join("\n")
+def format_stats(stats:, filter_params:, col_width:)
+  stats.map do |name, stat|
+    filtered_stat_values = stat.filter { |k| filter_params.keys[0..].include?(k) }.values
+    formatted_stat_values = filtered_stat_values.map { |v| v.to_s.rjust(col_width) }.join(' ')
+    name == :stdin ? formatted_stat_values : "#{formatted_stat_values} #{name}"
+  end.join("\n")
 end
 
 def max_col_width(file_stats)
   file_stats.values.map do |stat|
     stat.values.max.to_s.size
   end.max
-end
-
-def format(stat:, filter_params:, col_width: 7)
-  filtered_stat = stat.filter { |k| filter_params.keys[0..].include?(k) }.values
-  filtered_stat.map { |v| v.to_s.rjust(col_width) }.join(' ')
 end
 
 __FILE__ == $PROGRAM_NAME && main
