@@ -15,13 +15,13 @@ def main
   filter_params = { lines: true, words: true, bytes: true } if filter_params.empty?
 
   contents_with_filename = ARGV.empty? ? [readlines.join] : ARGV.map { |file_name| [File.read(file_name), file_name] }
-  stats = calcurate_stats(contents_with_filename)
+  stats = calculate_stats(contents_with_filename)
   col_width = stats.first[:file_name].nil? ? STDIN_COL_WIDTH : max_col_width(stats)
   formatted_stats = format_stats(stats:, filter_params:, col_width:)
   puts formatted_stats
 end
 
-def calcurate_stats(contents_with_filename)
+def calculate_stats(contents_with_filename)
   stats = contents_with_filename.map { |contents, file_name| build_data(contents, file_name) }
   return stats if stats.length == 1
 
@@ -30,7 +30,7 @@ end
 
 def build_data(contents, file_name)
   lines = contents.scan(/(\n|\r)/).count
-  words = contents.split(/[\s^　]+/).count
+  words = contents.split(/[^\s　][\s　]+/).count
   bytes = contents.bytesize
   { lines:, words:, bytes:, file_name: }
 end
